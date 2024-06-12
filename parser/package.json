@@ -12,6 +12,7 @@
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.4.5",
     "puppeteer": "^22.10.1",
+    "puppeteer-cluster": "^0.24.0",
     "typescript": "^5.4.5"
   },
   "devDependencies": {

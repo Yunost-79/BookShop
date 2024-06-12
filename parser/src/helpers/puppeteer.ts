@@ -1,5 +1,6 @@
 import puppeteer, { Browser, Page, PuppeteerLifeCycleEvent } from 'puppeteer';
 import chalk from 'chalk';
+import { Cluster } from 'puppeteer-cluster';
 
 interface I_PAGE_PUPPETEER_OPTS {
   waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[] | undefined;
@@ -24,8 +25,8 @@ const LAUNCH_PUPPETEER_OPTS: I_LAUNCH_PUPPETEER_OPTS = {
 };
 
 const PAGE_PUPPETEER_OPTS: I_PAGE_PUPPETEER_OPTS = {
-  waitUntil: 'networkidle2',
-  timeout: 5000000,
+  waitUntil: ['load', 'domcontentloaded', 'networkidle0'],
+  timeout: 3000000,
 };
 
 const acceptAllCookies = async (page: Page) => {
@@ -35,9 +36,9 @@ const acceptAllCookies = async (page: Page) => {
     });
 
     if (isElemPresent) {
-      await page.waitForSelector('#onetrust-banner-sdk', { timeout: 60000 });
+      await page.waitForSelector('#onetrust-consent-sdk');
       if (!page.isClosed()) {
-        await page.click('#onetrust-accept-btn-handler');
+        await page.click('#onetrust-reject-all-handler');
         return true;
       } else {
         throw new Error(chalk.red('Page is closed'));
@@ -54,12 +55,22 @@ const acceptAllCookies = async (page: Page) => {
 const getPageContent = async (url: string) => {
   let browser: Browser | null = null;
   try {
+    // const cluster = await Cluster.launch({
+    //   concurrency: Cluster.CONCURRENCY_CONTEXT,
+    //   maxConcurrency: 10,
+    // });
+
+    // await cluster.task(async ({page, data: url})=>{
+    //     await page.goto(url)
+    // })
+
+    // ===============================================================
     browser = await puppeteer.launch(LAUNCH_PUPPETEER_OPTS);
     const page = await browser.newPage();
     await page.goto(url, PAGE_PUPPETEER_OPTS);
     await acceptAllCookies(page);
     const content = await page.content();
-    await browser.close();
+    // await browser.close();
 
     return content;
   } catch (e) {
